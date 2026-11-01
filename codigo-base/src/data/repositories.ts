@@ -72,6 +72,9 @@ type ResumoTemporada = FunctionReturn<'my_season_summary'>[number];
 type GrupoTemporada = FunctionReturn<'my_season_group'>[number];
 type HistoricoTemporada = FunctionReturn<'my_season_history'>[number];
 
+// Missões globais/curso para a UI (migração 0031).
+type MissaoGlobal = FunctionReturn<'my_missions'>[number];
+
 type Amizade = Tables<'friendships'>;
 type CreateAmizadeInput = TablesInsert<'friendships'>;
 type StatusAmizade = Enums<'friendship_status'>;
@@ -1540,6 +1543,25 @@ export const temporadaRepository = {
     const { data, error } = await supabase.rpc('my_season_history', { p_limit: limite });
     if (error) throw new Error(`Erro ao obter o histórico de temporadas: ${error.message}`);
     return data ?? [];
+  }
+};
+
+// Missões globais e diárias de curso do usuário (migração 0031). Distinto do
+// missaoRepository, que trata as missões de SALA.
+export const missaoGlobalRepository = {
+  // Missões do período corrente do usuário logado (globais + diárias de curso),
+  // com progresso. Materializa as globais do período no servidor antes de ler.
+  async minhas(): Promise<MissaoGlobal[]> {
+    const { data, error } = await supabase.rpc('my_missions');
+    if (error) throw new Error(`Erro ao listar missões: ${error.message}`);
+    return data ?? [];
+  },
+
+  // Detalhe de uma ocorrência de missão.
+  async detalhe(idOcorrencia: string): Promise<MissaoGlobal | null> {
+    const { data, error } = await supabase.rpc('my_mission_detail', { p_occurrence_id: idOcorrencia });
+    if (error) throw new Error(`Erro ao obter o detalhe da missão: ${error.message}`);
+    return data?.[0] ?? null;
   }
 };
 
