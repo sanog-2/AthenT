@@ -129,7 +129,7 @@ export default function Ligas() {
             id: linha.user_id,
             nome: nomeExibido(linha.display_name, linha.hidden),
             pontos: linha.season_xp,
-            posicao: linha.position,
+            posicao: linha.rank_position,
             voce: linha.is_self,
             oculto: linha.hidden,
           }))
