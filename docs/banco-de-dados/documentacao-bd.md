@@ -64,7 +64,7 @@ O TopDown usa `friends_course_pac` com o curso ativo, `missions` publicadas e se
 - Confira se a mudança exige migração incremental e atualização das chamadas e dos tipos gerados.
 - O checkout não fornece `supabase/config.toml` nem um procedimento validado de bootstrap completo. A presença do pacote CLI não garante que `supabase start` ou um reset seja um setup pronto deste projeto.
 - Os seeds em [0013](../../codigo-base/supabase/migrations/0013_seed.sql) e [seed.sql](../../codigo-base/supabase/seed.sql) precisam ser lidos no contexto do ambiente de teste antes da execução; esta referência não instrui a aplicá-los sobre dados existentes.
-- Regenere `src/types/database.ts` a partir do esquema-alvo correspondente após a mudança. Não edite o arquivo à mão. O alvo e o comando de geração devem acompanhar a entrega; não há script de geração em `package.json` atualmente.
+- Regenere `src/types/database.ts` a partir do esquema-alvo correspondente após a mudança. Não edite o arquivo à mão. O alvo e o comando de geração devem acompanhar a entrega; não há script de geração em `package.json` atualmente. **Exceção temporária (issue 42):** como este checkout não tem alvo de geração, os enums de temporada/missão e as funções `current_season`/`my_season_*`/`course_coverage`/`friends_course_pac_v2` foram declarados à mão em `database.ts` (marcados com comentário), espelhando as migrações 0024/0026/0028/0029; substitua por uma regeneração real assim que houver esquema-alvo.
 - Confira no ambiente os recursos de Storage usados pelo [perfil](../../codigo-base/src/pages/profile/Profile.tsx); tabelas e RPCs não descrevem por si só as políticas do bucket.
 
 ## Verificação
