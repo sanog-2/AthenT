@@ -4,7 +4,7 @@ Referência do modelo usado pelo cliente, conferida em 2026-10-23 contra o SQL v
 
 ## Fontes e ordem de leitura
 
-1. [Migrações numeradas](../../codigo-base/supabase/migrations/), de `0001` a `0025` neste checkout: modelo, políticas, funções e suas alterações sucessivas. Leia a redefinição mais recente da função ou política que estiver alterando.
+1. [Migrações numeradas](../../codigo-base/supabase/migrations/), de `0001` a `0026` neste checkout: modelo, políticas, funções e suas alterações sucessivas. Leia a redefinição mais recente da função ou política que estiver alterando.
 2. [Tipos gerados](../../codigo-base/src/types/database.ts): estrutura tipada consumida pelo frontend. São uma fotografia de geração, não prova de que o SQL foi aplicado no ambiente de destino.
 3. [Consultas do cliente](../../codigo-base/src/data/repositories.ts): tabelas, views e RPCs efetivamente utilizadas.
 
@@ -29,6 +29,7 @@ As definições de produto estão no [glossário](../../GLOSSARY.md). Esta tabel
 | Avaliações e comentários | `reviews`, `comments` |
 | Caderno e anotações | `notebooks`, `notebook_pages` |
 | Ranking global | view `global_ranking` |
+| Temporadas competitivas | `seasons` (janela semanal), `season_groups` (grupos por categoria) e `season_entries` (inscrição, categoria/grupo congelados, XP de temporada) |
 
 ## Regras que precisam permanecer no servidor
 
@@ -42,6 +43,7 @@ As definições de produto estão no [glossário](../../GLOSSARY.md). Esta tabel
 | Créditos de XP por evento | `finalize_attempt` grava um `xp_events` por tentativa finalizada (origem `learning_base`, contexto `course`/`room`), idempotente por `idempotency_key`, sem alterar os saldos correntes. `user_xp_in_window` soma o XP novo elegível (`learning_base`/`course`) por janela `[início, fim)` — base da pontuação de temporada (Q102) | [0023](../../codigo-base/supabase/migrations/0023_xp_events_ledger.sql) |
 | Catálogo de missões globais/curso | Catálogo determinístico compartilhado (`mission_definitions`), ocorrências por período com meta/bônus congelados (`mission_occurrences`) e atribuição com progresso por usuário (`mission_assignments`). Só estrutura e catálogo inicial (Q136): o avanço de progresso e a concessão de bônus ficam em fatia posterior | [0024](../../codigo-base/supabase/migrations/0024_global_course_missions.sql) |
 | Avanço e bônus das missões globais/curso | `finalize_attempt` chama `advance_missions_for_attempt`, que materializa a ocorrência do período (`ensure_occurrence`, calendário America/Sao_Paulo) e avança cada missão compatível (globais por curso/sala; diária de curso só individual — Q017/Q125). Progresso recalculado das fontes (`count_mission_progress`); bônus concedido uma única vez (`upsert_mission_assignment`): `xp_events` origem `mission_bonus` + `xp_global`, sem pontuar a temporada (Q092/Q102) | [0025](../../codigo-base/supabase/migrations/0025_mission_advance_grant.sql) |
+| Temporadas (estrutura) | `seasons`/`season_groups`/`season_entries` com categorias Bronze–Lendário (`season_category`), janela semanal (Q101/Q103) e categoria/grupo congelados (Q104). Audiência limitada ao próprio grupo via `is_in_season_group` (Q066). `season_category_rank`/`season_category_from_rank` dão o ordinal da faixa para promover/rebaixar com piso Bronze (Q143). Formação e abertura/fechamento ficam em fatias posteriores | [0026](../../codigo-base/supabase/migrations/0026_seasons_structure.sql) |
 | Edição de curso | Rascunho editável pelo criador; conteúdo anterior à publicação protegido, com regras para acréscimos posteriores e exceção de admin | [0019](../../codigo-base/supabase/migrations/0019_course_edit_gating.sql) |
 | Permissões | RLS e funções verificam identidade e acesso; revisar também as alterações posteriores das políticas | [0011](../../codigo-base/supabase/migrations/0011_rls_policies.sql), [0015](../../codigo-base/supabase/migrations/0015_rankings.sql), [0019](../../codigo-base/supabase/migrations/0019_course_edit_gating.sql), [0020](../../codigo-base/supabase/migrations/0020_fix_room_members_rls_recursion.sql) |
 | Metadados de conteúdo | Ícone de módulo, explicação de questão e duração calculada do curso | [0021](../../codigo-base/supabase/migrations/0021_module_icon_question_explanation_course_duration.sql) |
