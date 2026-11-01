@@ -4,7 +4,7 @@ Referência do modelo usado pelo cliente, conferida em 2026-10-23 contra o SQL v
 
 ## Fontes e ordem de leitura
 
-1. [Migrações numeradas](../../codigo-base/supabase/migrations/), de `0001` a `0023` neste checkout: modelo, políticas, funções e suas alterações sucessivas. Leia a redefinição mais recente da função ou política que estiver alterando.
+1. [Migrações numeradas](../../codigo-base/supabase/migrations/), de `0001` a `0024` neste checkout: modelo, políticas, funções e suas alterações sucessivas. Leia a redefinição mais recente da função ou política que estiver alterando.
 2. [Tipos gerados](../../codigo-base/src/types/database.ts): estrutura tipada consumida pelo frontend. São uma fotografia de geração, não prova de que o SQL foi aplicado no ambiente de destino.
 3. [Consultas do cliente](../../codigo-base/src/data/repositories.ts): tabelas, views e RPCs efetivamente utilizadas.
 
@@ -22,6 +22,7 @@ As definições de produto estão no [glossário](../../GLOSSARY.md). Esta tabel
 | Tentativa, resposta e conclusão | `attempts`, `answers`, `completions` |
 | Sala e participação | `rooms`, `room_members` |
 | Avisos, missões e progresso | `announcements`, `missions`, `mission_progress` |
+| Missões globais e diárias de curso | `mission_definitions` (catálogo), `mission_occurrences` (período), `mission_assignments` (progresso do usuário) |
 | Amizade e notificação | `friendships`, `notifications` |
 | Créditos de XP por evento | `xp_events` (livro append-only; fundação das temporadas) |
 | Medalhas | `medals`, `user_medals` |
@@ -39,6 +40,7 @@ As definições de produto estão no [glossário](../../GLOSSARY.md). Esta tabel
 | Aula sem questões | `complete_empty_lesson` conclui no contexto de curso com zero XP e recalcula progresso | [0022](../../codigo-base/supabase/migrations/0022_complete_empty_lesson.sql) |
 | Ranking | Global por XP acumulado; amigos por PAC no curso; pontuação de sala separada. Sem reset semanal | [0015](../../codigo-base/supabase/migrations/0015_rankings.sql) |
 | Créditos de XP por evento | `finalize_attempt` grava um `xp_events` por tentativa finalizada (origem `learning_base`, contexto `course`/`room`), idempotente por `idempotency_key`, sem alterar os saldos correntes. `user_xp_in_window` soma o XP novo elegível (`learning_base`/`course`) por janela `[início, fim)` — base da pontuação de temporada (Q102) | [0023](../../codigo-base/supabase/migrations/0023_xp_events_ledger.sql) |
+| Catálogo de missões globais/curso | Catálogo determinístico compartilhado (`mission_definitions`), ocorrências por período com meta/bônus congelados (`mission_occurrences`) e atribuição com progresso por usuário (`mission_assignments`). Só estrutura e catálogo inicial (Q136): o avanço de progresso e a concessão de bônus ficam em fatia posterior | [0024](../../codigo-base/supabase/migrations/0024_global_course_missions.sql) |
 | Edição de curso | Rascunho editável pelo criador; conteúdo anterior à publicação protegido, com regras para acréscimos posteriores e exceção de admin | [0019](../../codigo-base/supabase/migrations/0019_course_edit_gating.sql) |
 | Permissões | RLS e funções verificam identidade e acesso; revisar também as alterações posteriores das políticas | [0011](../../codigo-base/supabase/migrations/0011_rls_policies.sql), [0015](../../codigo-base/supabase/migrations/0015_rankings.sql), [0019](../../codigo-base/supabase/migrations/0019_course_edit_gating.sql), [0020](../../codigo-base/supabase/migrations/0020_fix_room_members_rls_recursion.sql) |
 | Metadados de conteúdo | Ícone de módulo, explicação de questão e duração calculada do curso | [0021](../../codigo-base/supabase/migrations/0021_module_icon_question_explanation_course_duration.sql) |
