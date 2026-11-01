@@ -66,6 +66,12 @@ type CreateAnotacoesInput = TablesInsert<'notebook_pages'>;
 type RankingGlobal = Views<'global_ranking'>;
 type RankingAmigosCurso = FunctionReturn<'friends_course_pac'>[number];
 
+// Temporadas competitivas (migrações 0026–0029).
+type TemporadaAtual = FunctionReturn<'current_season'>[number];
+type ResumoTemporada = FunctionReturn<'my_season_summary'>[number];
+type GrupoTemporada = FunctionReturn<'my_season_group'>[number];
+type HistoricoTemporada = FunctionReturn<'my_season_history'>[number];
+
 type Amizade = Tables<'friendships'>;
 type CreateAmizadeInput = TablesInsert<'friendships'>;
 type StatusAmizade = Enums<'friendship_status'>;
@@ -1502,6 +1508,38 @@ export const rankingRepository = {
   // Ranking interno da sala (por xp_internal).
   async listarPorSala(idSala: string): Promise<Participa[]> {
     return participaRepository.listarPorSala(idSala);
+  }
+};
+
+// Temporadas competitivas (ligas globais por XP). Leituras expostas pelas
+// migrações 0028–0029; a formação/fechamento é operação de autoridade no banco.
+export const temporadaRepository = {
+  // Temporada corrente (janela contém agora) ou null se não houver nenhuma ativa.
+  async atual(): Promise<TemporadaAtual | null> {
+    const { data, error } = await supabase.rpc('current_season');
+    if (error) throw new Error(`Erro ao obter a temporada atual: ${error.message}`);
+    return data?.[0] ?? null;
+  },
+
+  // Resumo pessoal do usuário logado numa temporada (categoria, grupo, XP, posição).
+  async meuResumo(idTemporada: string): Promise<ResumoTemporada | null> {
+    const { data, error } = await supabase.rpc('my_season_summary', { p_season_id: idTemporada });
+    if (error) throw new Error(`Erro ao obter o resumo da temporada: ${error.message}`);
+    return data?.[0] ?? null;
+  },
+
+  // Classificação do próprio grupo do usuário na temporada (só o próprio grupo).
+  async meuGrupo(idTemporada: string): Promise<GrupoTemporada[]> {
+    const { data, error } = await supabase.rpc('my_season_group', { p_season_id: idTemporada });
+    if (error) throw new Error(`Erro ao obter o grupo da temporada: ${error.message}`);
+    return data ?? [];
+  },
+
+  // Histórico próprio das temporadas do usuário (mais recentes primeiro).
+  async meuHistorico(limite = 20): Promise<HistoricoTemporada[]> {
+    const { data, error } = await supabase.rpc('my_season_history', { p_limit: limite });
+    if (error) throw new Error(`Erro ao obter o histórico de temporadas: ${error.message}`);
+    return data ?? [];
   }
 };
 

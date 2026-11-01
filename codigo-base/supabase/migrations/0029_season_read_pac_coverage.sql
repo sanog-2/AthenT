@@ -211,14 +211,14 @@ grant execute on function public.my_season_summary(uuid) to authenticated;
 -- Retorna [] quando o usuário não tem grupo (estado de formação — Q066/Q141).
 create or replace function public.my_season_group(p_season_id uuid)
 returns table (
-  user_id      uuid,
-  display_name text,
-  avatar_url   text,
-  banner_url   text,
-  season_xp    integer,
-  position     integer,
-  is_self      boolean,
-  hidden       boolean
+  user_id       uuid,
+  display_name  text,
+  avatar_url    text,
+  banner_url    text,
+  season_xp     integer,
+  rank_position integer,  -- "position" é palavra reservada do SQL e quebra a criação da função
+  is_self       boolean,
+  hidden        boolean
 )
 language sql
 stable
@@ -237,14 +237,14 @@ as $$
     case when se.identity_hidden then null else p.avatar_url end   as avatar_url,
     case when se.identity_hidden then null else p.banner_url end   as banner_url,
     se.season_xp,
-    rank() over (order by se.season_xp desc, se.joined_at asc, se.user_id asc)::integer as position,
+    rank() over (order by se.season_xp desc, se.joined_at asc, se.user_id asc)::integer as rank_position,
     (se.user_id = auth.uid()) as is_self,
     se.identity_hidden as hidden
   from public.season_entries se
   join public.profiles p on p.id = se.user_id
   where se.group_id is not null
     and se.group_id = (select group_id from my_group)
-  order by position asc;
+  order by rank_position asc;
 $$;
 
 comment on function public.my_season_group(uuid) is
