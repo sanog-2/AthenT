@@ -53,6 +53,8 @@ docker exec -i supabase_db_<proj> psql -U postgres -d postgres -f codigo-base/su
 ```
 Aplicar (ensaio remoto): cole o conteúdo no SQL Editor do projeto, ou use o runner/CLI com a connection string de ensaio. **Não rodar em produção.**
 
+> **Codificação (UTF-8).** Os seeds contêm acentos e emojis (ícones de módulo). Ao aplicar por pipe no PowerShell, force UTF-8 antes (`chcp 65001`; `[Console]::OutputEncoding = [System.Text.Encoding]::UTF8`; `Get-Content ... -Encoding UTF8`), senão os caracteres multibyte são gravados como `?` no banco. O SQL Editor do Supabase e `psql -f` preservam UTF-8 naturalmente. O `seed.sql` já define `search_path = public, extensions` para achar `gen_salt`/`crypt` do pgcrypto no ambiente hospedado.
+
 ## 4. Casos de teste de servidor (SQL)
 
 Cada caso traz a verificação e o resultado esperado. Rodar após o seed do cenário. As consultas abaixo assumem o papel `postgres`/admin; onde a regra depende de `auth.uid()`, use um bloco de transação com `set local request.jwt.claims = '{"sub":"<uuid>"}'`.
