@@ -229,7 +229,7 @@ export default function Ligas() {
                       Seu grupo ainda está em formação. Volte em instantes.
                     </p>
                   ) : podio.length > 0 ? (
-                    <RankingPodium players={podio} ariaLabel={`Top 5 do seu grupo na liga ${nomeDaCategoria[tierAtual]}`} />
+                    <RankingPodium players={podio} hideTier ariaLabel={`Top 5 do seu grupo na liga ${nomeDaCategoria[tierAtual]}`} />
                   ) : (
                     <p className="ligas__subtitulo">Ninguém pontuou no seu grupo ainda.</p>
                   )}
