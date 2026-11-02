@@ -20,6 +20,9 @@ type RankingPodiumProps = {
   compact?: boolean;
   width?: "default" | "compact" | "room";
   ariaLabel?: string;
+  // Quando true, oculta o emblema e o nome do patamar em cada degrau, mantendo
+  // apenas a cor do patamar (borda/sombra/posição). Usado na página de ligas.
+  hideTier?: boolean;
 };
 
 type Variant = "default" | "room" | "compact";
@@ -169,9 +172,10 @@ type PodiumStepProps = {
   compact: boolean;
   metaHeight: number;
   stepHeight: number;
+  hideTier?: boolean;
 };
 
-function PodiumStep({ player, index, compact, metaHeight, stepHeight }: PodiumStepProps) {
+function PodiumStep({ player, index, compact, metaHeight, stepHeight, hideTier }: PodiumStepProps) {
   const theme = tierTheme[player.tier];
   const isFirst = player.height === "first";
 
@@ -236,15 +240,21 @@ function PodiumStep({ player, index, compact, metaHeight, stepHeight }: PodiumSt
               ),
         )}
       >
-        <RankBadge tier={player.tier} size={compact ? 34 : 44} />
-        <span
-          className={cx(
-            "w-full truncate text-center font-black uppercase leading-[1.2] text-(--tier)",
-            compact ? "text-[9px] tracking-[0.07em]" : "text-[10px] tracking-[0.12em]",
-          )}
-        >
-          {theme.label}
-        </span>
+        {/* Emblema e nome do patamar: ocultos quando hideTier (ligas), mantendo
+            apenas a cor do patamar nas bordas/sombra do degrau. */}
+        {!hideTier && (
+          <>
+            <RankBadge tier={player.tier} size={compact ? 34 : 44} />
+            <span
+              className={cx(
+                "w-full truncate text-center font-black uppercase leading-[1.2] text-(--tier)",
+                compact ? "text-[9px] tracking-[0.07em]" : "text-[10px] tracking-[0.12em]",
+              )}
+            >
+              {theme.label}
+            </span>
+          </>
+        )}
       </div>
     </div>
   );
@@ -261,6 +271,7 @@ export function RankingPodium({
   compact = false,
   width = "default",
   ariaLabel = "Pódio de ranking",
+  hideTier = false,
 }: RankingPodiumProps) {
   const variant: Variant = compact || width === "compact" ? "compact" : width;
   const config = variantConfig[variant];
@@ -319,6 +330,7 @@ export function RankingPodium({
               compact={isCompact}
               metaHeight={config.metaHeight}
               stepHeight={config.steps[player.height]}
+              hideTier={hideTier}
             />
           ))}
         </div>
