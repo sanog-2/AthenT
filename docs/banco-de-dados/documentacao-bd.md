@@ -4,7 +4,7 @@ Referência do modelo usado pelo cliente, conferida em 2026-10-23 contra o SQL v
 
 ## Fontes e ordem de leitura
 
-1. [Migrações numeradas](../../codigo-base/supabase/migrations/), de `0001` a `0033` neste checkout: modelo, políticas, funções e suas alterações sucessivas. Leia a redefinição mais recente da função ou política que estiver alterando.
+1. [Migrações numeradas](../../codigo-base/supabase/migrations/), de `0001` a `0034` neste checkout: modelo, políticas, funções e suas alterações sucessivas. Leia a redefinição mais recente da função ou política que estiver alterando.
 2. [Tipos gerados](../../codigo-base/src/types/database.ts): estrutura tipada consumida pelo frontend. São uma fotografia de geração, não prova de que o SQL foi aplicado no ambiente de destino.
 3. [Consultas do cliente](../../codigo-base/src/data/repositories.ts): tabelas, views e RPCs efetivamente utilizadas.
 
@@ -30,6 +30,7 @@ As definições de produto estão no [glossário](../../GLOSSARY.md). Esta tabel
 | Caderno e anotações | `notebooks`, `notebook_pages` |
 | Ranking global | view `global_ranking` |
 | Temporadas competitivas | `seasons` (janela semanal), `season_groups` (grupos por categoria) e `season_entries` (inscrição, categoria/grupo congelados, XP de temporada) |
+| Observabilidade do agendador | `season_ops_log` (trilha append-only, admin-only) |
 
 ## Regras que precisam permanecer no servidor
 
@@ -46,6 +47,7 @@ As definições de produto estão no [glossário](../../GLOSSARY.md). Esta tabel
 | Leitura de missões para a UI | `my_missions()` lista as missões do período corrente do usuário (globais + diárias de curso já materializadas) com progresso, materializando as globais do período antes de ler (`ensure_current_global_occurrences` — Q020/Q072); `my_mission_detail(occurrence)` dá o detalhe (Q073) | [0031](../../codigo-base/supabase/migrations/0031_mission_read.sql) |
 | Unicidade das ocorrências globais | Correção: a unicidade de `mission_occurrences` não barrava duplicatas quando `course_id` é NULL (globais). Substituída por índice único com `coalesce(course_id, uuid-sentinela)`; duplicatas removidas e `ensure_occurrence` ajustada para o `on conflict` correspondente | [0032](../../codigo-base/supabase/migrations/0032_fix_global_occurrence_uniqueness.sql) |
 | Agendador de temporadas | `tick_seasons()` orquestra a virada de forma idempotente: abre a temporada da semana corrente (`open_season`) e fecha as vencidas (`close_season`). Agendada via `pg_cron` a cada 5 minutos (Q109/Q134), com fallback silencioso se `pg_cron` não existir (dispara-se por agendador externo ou chamada manual). Substitui, para o ramo de temporadas, a nota "no cron" de 0001 | [0033](../../codigo-base/supabase/migrations/0033_season_scheduler.sql) |
+| Observabilidade do fechamento | Trilha operacional `season_ops_log` (append-only, sem PII — Q087); `tick_seasons` passa a registrar `tick_start`/`close_ok`/`close_error`/`tick_done` e isola erros por temporada (uma falha não aborta a varredura; fica em apuração para reconciliação). `seasons_needing_attention(grace)` lista as temporadas vencidas há mais de N min ainda não fechadas — condição de alerta de 30 min (Q134), restrita a admin | [0034](../../codigo-base/supabase/migrations/0034_season_closing_observability.sql) |
 | Temporadas (estrutura) | `seasons`/`season_groups`/`season_entries` com categorias Bronze–Lendário (`season_category`), janela semanal (Q101/Q103) e categoria/grupo congelados (Q104). Audiência limitada ao próprio grupo via `is_in_season_group` (Q066). `season_category_rank`/`season_category_from_rank` dão o ordinal da faixa para promover/rebaixar com piso Bronze (Q143). Formação e abertura/fechamento ficam em fatias posteriores | [0026](../../codigo-base/supabase/migrations/0026_seasons_structure.sql) |
 | Formação de grupos por afinidade social | `form_season_groups(season, target, min, cap)` distribui os inscritos sem grupo de cada categoria em grupos por proximidade social (`social_distance_order`, BFS por amizades aceitas — Q123), alvo 20/teto 30 (Q104/Q124). Idempotente: só atua sobre `group_id is null`, nunca move quem já tem grupo (congelamento). Operação de autoridade (revogada de `authenticated`) | [0027](../../codigo-base/supabase/migrations/0027_season_group_formation.sql) |
 | Abertura/fechamento de temporada | RPCs idempotentes de autoridade (sem cron embutido): `open_season(starts_at)` cria a season, inscreve contas ativas com atividade nos 7 dias anteriores (`is_recently_active` — Q138) na categoria herdada/bronze (Q139) e forma grupos; `close_season(season_id, min)` consolida `season_xp` (`user_season_xp` — Q102), aplica queda de zeros com piso Bronze sempre (Q143), cortes de 20% para positivos em grupo grande (promoção/rebaixamento, empates juntos — Q106/Q140) e protege grupo pequeno (Q105), persistindo `result_category`/`final_rank` | [0028](../../codigo-base/supabase/migrations/0028_season_open_close.sql) |
