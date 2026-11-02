@@ -254,8 +254,12 @@
 .catalogo__meta { @apply flex flex-col items-end gap-[10px]; }
 .catalogo__meta > div { @apply flex items-center gap-[7px] text-[10px] text-violet-pale/70; }
 .catalogo__meta strong { @apply text-[11px] text-[#f4eeff]; font-weight: 500; }
+/* Linha de tags: o rótulo alinha no topo e as etiquetas quebram juntas, mantendo
+   o mesmo ritmo das demais linhas (como no pop-up de salas). */
+.catalogo__meta-tags { @apply items-start; }
+.catalogo__meta-chips { @apply flex flex-wrap justify-end gap-[6px]; }
 .catalogo__tag {
-  @apply bg-[rgba(255,255,255,0.055)] px-[8px] py-[5px] text-violet-pale;
+  @apply bg-[rgba(255,255,255,0.055)] px-[8px] py-[5px] text-[10px] text-violet-pale;
   border: 1px solid rgba(255, 255, 255, 0.1);
   border-radius: 8px;
 }
@@ -290,7 +294,7 @@
   border-radius: 11px;
 }
 .catalogo__modulo--aberto {
-  @apply bg-gold/2.5;
+  @apply bg-gold/[0.025];
   border-color: color-mix(in srgb, var(--color-gold) 18%, transparent);
 }
 .catalogo__modulo-botao {
@@ -321,10 +325,19 @@
   border-top: 1px solid rgba(255, 255, 255, 0.055);
 }
 .catalogo__aula-play {
-  @apply grid size-[18px] place-items-center bg-gold/9 text-gold;
+  @apply grid size-[18px] place-items-center bg-gold/[0.09] text-gold;
   border-radius: 6px;
 }
-.catalogo__aula--concluida { opacity: 0.8; }
+.catalogo__aula small { @apply flex items-center gap-[4px] text-[8px] text-violet-pale/50; }
+
+/* Aula clicável: abre a aula (igual à trilha das salas). */
+button.catalogo__aula--botao {
+  @apply w-full cursor-pointer bg-transparent text-left text-violet-pale/70;
+  border-width: 1px 0 0;
+  border-style: solid;
+  border-color: rgba(255, 255, 255, 0.055);
+}
+button.catalogo__aula--botao:hover { @apply text-[#f4eeff]; background: rgba(255, 255, 255, 0.04); }
 .catalogo__aula--concluida .catalogo__aula-play { @apply bg-gold text-[#211029]; }
 .catalogo__vazio-modulos { @apply px-[4px] py-[10px] text-[11px] text-violet-pale/60; }
 
