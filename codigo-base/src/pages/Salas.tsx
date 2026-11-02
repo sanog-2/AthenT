@@ -127,12 +127,14 @@ function traduzirErro(erro: unknown) {
   return mensagem || "Algo deu errado. Tente novamente.";
 }
 
+// Faixas de PAC alinhadas a division_for_pac (migração 0039): 6 patamares.
 function tierPorPac(pac: number): Tier {
-  if (pac < 60) return "bronze";
-  if (pac <= 74) return "silver";
-  if (pac <= 84) return "gold";
-  if (pac <= 94) return "platinum";
-  return "diamond";
+  if (pac < 50) return "bronze";
+  if (pac <= 64) return "silver";
+  if (pac <= 74) return "gold";
+  if (pac <= 84) return "platinum";
+  if (pac <= 94) return "diamond";
+  return "master";
 }
 
 const ALTURAS: PodiumHeight[] = ["first", "second", "third", "fourth", "fifth"];

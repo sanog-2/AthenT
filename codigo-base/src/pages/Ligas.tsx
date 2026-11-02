@@ -20,7 +20,7 @@ import "./Ligas.css";
 //   - my_season_group   -> a classificação do PRÓPRIO grupo (Q066: só o seu grupo);
 //   - my_season_history -> histórico das temporadas do usuário.
 //
-// As categorias (Bronze→Lendário) são as faixas competitivas; a identidade exibida
+// As categorias (Bronze→Mestre) são as faixas competitivas; a identidade exibida
 // é só a padrão (display name/avatar/banner — Q069), e linhas ocultas (conta
 // desativada — Q070) aparecem sem nome/avatar mas com posição/XP.
 // ---------------------------------------------------------------------------
@@ -38,7 +38,6 @@ const categorias: { tier: Tier; nome: string }[] = [
   { tier: "platinum", nome: "Platina" },
   { tier: "diamond", nome: "Diamante" },
   { tier: "master", nome: "Mestre" },
-  { tier: "legendary", nome: "Lendário" },
 ];
 
 const nomeDaCategoria = Object.fromEntries(categorias.map((c) => [c.tier, c.nome])) as Record<Tier, string>;
@@ -195,7 +194,7 @@ export default function Ligas() {
             </section>
           ) : (
             <>
-              {/* Faixas competitivas (Bronze→Lendário). Destaca a sua categoria. */}
+              {/* Faixas competitivas (Bronze→Mestre). Destaca a sua categoria. */}
               <section className="ligas__seletor" aria-label="Categorias da liga">
                 {categorias.map((categoria) => {
                   const ativa = categoria.tier === tierAtual;
