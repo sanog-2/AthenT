@@ -35,7 +35,9 @@ declare
   l_a201   uuid := '00000000-0000-4000-e000-00000000a201';
   q_a101   uuid := '00000000-0000-4000-f000-00000000a101';
   q_a201   uuid := '00000000-0000-4000-f000-00000000a201';
+  r_logica uuid := '00000000-0000-4000-b000-000000000001'; -- sala LOGICA25 (Carla é membro)
   v_a uuid; v_b uuid;
+  v_xp_room integer;
   v_xp1 integer; v_xp2 integer; v_xp3 integer;
   v_n integer; v_cat public.season_category; v_res public.season_category;
   v_s uuid; v_g uuid; v_hidden boolean; v_dn text;
@@ -81,6 +83,20 @@ begin
   insert into public.answers (attempt_id, question_id, submitted) values (v_a, q_a101, '{"selected":["a"]}'::jsonb);
   select xp_earned into v_xp3 from public.finalize_attempt(v_a);
   assert v_xp3 = 0, format('T1.3: acerto apos 1o acerto deveria render 0 (anti-regrind), veio %s', v_xp3);
+
+  -- =========================================================================
+  -- T10 — Finalização em contexto de SALA não quebra (regressão do trigger
+  -- set_updated_at em room_members, corrigida em 0038). Antes falhava com
+  -- "record new has no field updated_at".
+  -- =========================================================================
+  insert into public.attempts (user_id, lesson_id, room_id) values (u_carla, l_a201, r_logica) returning id into v_a;
+  insert into public.answers (attempt_id, question_id, submitted) values (v_a, q_a201, '{"text":"if"}'::jsonb);
+  select xp_earned into v_xp_room from public.finalize_attempt(v_a);  -- nao deve lancar excecao
+  assert v_xp_room >= 0, 'T10: finalizacao em sala deveria concluir sem erro';
+  -- O credito de sala vai para room_members.xp_internal (nunca xp_global).
+  assert exists (
+    select 1 from public.room_members where room_id = r_logica and user_id = u_carla
+  ), 'T10: Carla deveria permanecer membro da sala apos finalizar';
 
   -- =========================================================================
   -- T2 — Ledger de XP (0023 / Q102)
