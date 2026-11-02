@@ -150,15 +150,28 @@ Pré: `pg_net` habilitado e `season_alert_webhook` no Vault com a URL **limpa** 
 
 > **Segurança:** nunca selecionar/ecoar o valor da URL do webhook; uma mensagem de erro do `pg_net` pode conter a URL. Se vazar, regenerar o webhook e atualizar o secret.
 
-## 7. Automação recomendada
+## 7. Automação
 
-O runner SQL legado (`supabase/testes/`) usa tabelas antigas e **não** cobre a issue 42. Para automação futura, o alvo é:
+### Harness SQL automático (T1–T9)
 
-- **SQL isolado (Postgres real)**: um harness que roda o seed do cenário e as asserções T1–T9 dentro de transações, com `rollback` ao fim, afirmando os valores esperados. É a camada que realmente valida XP/temporadas/RLS.
-- **E2E (Playwright)**: cobrir U1–U6 com sessão autenticada e respostas controladas, como já se faz para o dashboard.
-- **Pipeline do projeto** (`lint`/`typecheck`/`test:run`/`test:check`/`build`) em cada PR — cobre compilação/tipos, não as regras de banco.
+Os casos de servidor estão automatizados em `codigo-base/supabase/testes-issue-42/harness.sql`, executado pelo runner `run-harness.ts` (ou pelo script npm). O harness:
+- É **auto-verificável**: cada caso usa `assert`; a falha de qualquer asserção aborta com erro (o runner sai com código ≠ 0).
+- É **isolado**: roda numa transação e dá `ROLLBACK` ao final — não persiste nenhum dado (tentativas, temporadas, eventos).
+- É **independente do estado**: no início da transação zera as tabelas de temporada/missão/evento e as tentativas das contas de teste (tudo revertido no rollback), então pode ser reexecutado sem colidir com resíduos.
 
-Enquanto o harness automatizado não existe, a validação é o roteiro manual deste documento executado em ambiente de ensaio, com evidências registradas (versão, ambiente, papel/conta, passos, resultado).
+Rodar contra um banco de **ensaio** (nunca produção):
+```bash
+# a connection string aponta para o banco de ensaio (local ou Athen-Teste)
+SUPABASE_DB_URL=postgresql://postgres:postgres@127.0.0.1:55322/postgres npm run test:issue42
+```
+Pré-requisitos no alvo: migrações `0001`–`0037` aplicadas e `supabase/seed.sql` carregado (fornece as contas/cursos). O runner recusa rodar contra a connection string do projeto de produção.
+
+Saída de sucesso: `HARNESS ISSUE 42: OK`. Qualquer falha imprime a mensagem da asserção (ex.: `T5.1b: zero deveria cair para bronze...`) e sai com erro.
+
+### Pendente / complementar
+- **E2E (Playwright)**: cobrir U1–U6 (telas) com sessão autenticada e respostas controladas, como já se faz para o dashboard — ainda não implementado.
+- **Pipeline do projeto** (`lint`/`typecheck`/`test:run`/`test:check`/`build`): cobre compilação/tipos, não as regras de banco; complementa o harness.
+- O harness cobre os casos determinísticos de servidor; os cenários nominais de corte em grupo grande (T5.2) e a entrega real do alerta ao webhook (seção 6, exige `pg_net`) continuam como verificação manual/ensaio.
 
 ## 8. Critérios de aceite (resumo)
 

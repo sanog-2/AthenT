@@ -11,6 +11,7 @@
     "test": "vitest",
     "test:run": "vitest run",
     "test:db": "tsx supabase/testes/run-testes.ts",
+    "test:issue42": "tsx supabase/testes-issue-42/run-harness.ts",
     "test:check": "tsc -p tsconfig.test.json --noEmit",
     "test:e2e": "playwright test",
     "preview": "vite preview",
