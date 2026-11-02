@@ -168,10 +168,21 @@ Pré-requisitos no alvo: migrações `0001`–`0037` aplicadas e `supabase/seed.
 
 Saída de sucesso: `HARNESS ISSUE 42: OK`. Qualquer falha imprime a mensagem da asserção (ex.: `T5.1b: zero deveria cair para bronze...`) e sai com erro.
 
+### E2E das telas (U1–U5)
+
+Automatizados em `tests/e2e/ligas.spec.ts` e `tests/e2e/missoes.spec.ts`, no padrão do `dashboard.spec.ts`: build de produção com Supabase fake, auth via `localStorage` e as RPCs de temporada/missão (`current_season`, `my_season_summary`, `my_season_group`, `my_missions`, `my_mission_detail`) mockadas por `page.route`. Cobrem:
+- **U1** temporada corrente, categoria e classificação do próprio grupo;
+- **U2** identidade oculta (nome nulo, XP/posição preservados);
+- **U3** lista de missões com contexto, meta, progresso e bônus;
+- **U4** detalhe com critério, meta, prazo com fuso e recompensa; e estado indisponível;
+- **U5** navegação com "Missões" ao lado de "Ligas".
+
+Rodar: `npm run test:e2e` (toda a suíte) — requer Chromium (`npx playwright install chromium`).
+
 ### Pendente / complementar
-- **E2E (Playwright)**: cobrir U1–U6 (telas) com sessão autenticada e respostas controladas, como já se faz para o dashboard — ainda não implementado.
-- **Pipeline do projeto** (`lint`/`typecheck`/`test:run`/`test:check`/`build`): cobre compilação/tipos, não as regras de banco; complementa o harness.
+- **U6 (TopDown)** com missões globais/curso: o resumo depende de curso ativo no dashboard; coberto parcialmente pelo `dashboard.spec.ts`. Um caso dedicado pode ser acrescentado.
 - O harness cobre os casos determinísticos de servidor; os cenários nominais de corte em grupo grande (T5.2) e a entrega real do alerta ao webhook (seção 6, exige `pg_net`) continuam como verificação manual/ensaio.
+- **Pipeline do projeto** (`lint`/`typecheck`/`test:run`/`test:check`/`build`): cobre compilação/tipos, complementa o harness e os E2E.
 
 ## 8. Critérios de aceite (resumo)
 
